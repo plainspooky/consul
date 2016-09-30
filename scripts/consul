@@ -1,0 +1,46 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:             consul
+# Required-Start:       $remote_fs $syslog
+# Required-Stop:        $remote_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Consul Agent
+### END INIT INFO
+
+source /etc/default/consul
+
+USER=consul
+DAEMON=consul
+ERR_FILE=/var/log/${DAEMON}.error
+LOG_FILE=/var/log/${DAEMON}.log
+PID_FILE=/run/${DAEMON}.pid
+PROG=/usr/local/bin/consul
+
+case $1 in
+    start)
+    if [[ -f ${PID_FILE} ]]; then
+        echo "Already running!" && exit 1
+    else
+        COMMAND="nohup ${PROG} agent $( [[ "${MODE}" == "server" ]] && echo '-server -bootstrap' ) -bind=${BIND_IP} -config-dir=/etc/consul.d -data-dir=/var/lib/consul"
+        echo -n "Starting ${DAEMON}... "
+        su --shell /bin/sh --login ${USER} --command "${COMMAND} &" > ${LOG_FILE} 2>${ERR_FILE} && \
+        echo $( ps -u ${USER} | grep ${USER} | awk '{ print $1 }' ) > ${PID_FILE} && \
+        echo "OK"
+    fi
+    ;;
+    stop)
+    if [[ -f ${PID_FILE} ]]; then
+        echo "Stoping ${DAEMON}..."
+        kill $( cat ${PID_FILE} ) && rm -f ${PID_FILE}
+    else
+        echo "Not running!"
+        exit 1
+    fi
+    ;;
+    *)
+    echo "Use: ${0} start|stop"
+    ;;
+esac
+
+exit 0
