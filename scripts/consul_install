@@ -22,45 +22,53 @@ PROG_USR="consul"
 PROG_VRS='0.7.0'
 PROG_ZIP="${PROG_BIN}.zip"
 
-# check processor architecture
-case $( uname --machine | cut --characters=1-3 ) in
-    x86)    ARCH='amd64';;
-    i68)    ARCH='386';;
-    arm)    ARCH='arm';;
-    *)      exit 1;;
-esac
-DOWNLOAD="https://releases.hashicorp.com/consul/0.7.0/consul_${PROG_VRS}_linux_${ARCH}.zip"
+do_consul_install(){
+    # check processor architecture
+    case $( uname --machine | cut --characters=1-3 ) in
+        x86)    ARCH='amd64';;
+        i68)    ARCH='386';;
+        arm)    ARCH='arm';;
+        *)      exit 1;;
+    esac
+    DOWNLOAD="https://releases.hashicorp.com/consul/0.7.0/consul_${PROG_VRS}_linux_${ARCH}.zip"
+
+    # download consul and install on right place
+    cd /tmp/
+    wget --no-verbose --output-document=${PROG_ZIP} ${DOWNLOAD}
+    unzip ${PROG_ZIP}
+    sudo chmod +x consul
+    sudo mv consul ${INST_DIR}/${PROG_BIN}
+
+    # create a new user
+    HOME_DIR="/var/lib/${PROG_BIN}"
+    sudo adduser --system --home ${HOME_DIR} --group --disabled-password --disabled-login ${PROG_USR}
+
+    # create configuration directories
+    sudo mkdir ${PROG_CFG}
+    sudo chown root.${PROG_USR} ${PROG_CFG}
+    sudo chmod 755 ${PROG_CFG}
+
+    # create configuration file
+    [[ ! -f ${PROG_DFL} ]] && sudo cp /vagrant/scripts/consul_default ${PROG_DFL}
+
+    # create log files
+    sudo touch ${PROG_ERR} ${PROG_LOG}
+    sudo chown root.${PROG_USR} ${PROG_ERR} ${PROG_LOG}
+    sudo chmod 664 ${PROG_ERR} ${PROG_LOG}
+
+    # copy startup scripts and enable at boot
+    sudo cp /vagrant/scripts/consul ${PROG_SYV}
+    sudo chmod 755 ${PROG_SYV}
+    sudo update-rc.d ${PROG_BIN} defaults
+}
 
 # required packages
-sudo apt-get install --yes unzip wget
+sudo apt-get install --yes rsync unzip wget
 
 # download consul and install on right place
-cd /tmp/
-wget --no-verbose --output-document=${PROG_ZIP} ${DOWNLOAD}
-unzip ${PROG_ZIP}
-sudo chmod +x consul
-sudo mv consul ${INST_DIR}/${PROG_BIN}
+[[ ! -f "${INST_DIR}/${PROG_BIN}" ]] && do_consul_install
 
-# create a new user
-HOME_DIR="/var/lib/${PROG_BIN}"
-sudo adduser --system --home ${HOME_DIR} --group --disabled-password --disabled-login ${PROG_USR}
-
-# create configuration directory
-sudo mkdir ${PROG_CFG}
-sudo chown root.${PROG_USR} ${PROG_CFG}
-sudo chmod 755 ${PROG_CFG}
-
-# create a default configuration file
-sudo cp /vagrant/scripts/consul_default ${PROG_DFL}
-
-# create log files
-sudo touch ${PROG_ERR} ${PROG_LOG}
-sudo chown root.${PROG_USR} ${PROG_ERR} ${PROG_LOG}
-sudo chmod 664 ${PROG_ERR} ${PROG_LOG}
-
-# copy startup scripst and enable at boot
-sudo cp /vagrant/scripts/consul ${PROG_SYV}
-sudo chmod 755 ${PROG_SYV}
-sudo update-rc.d ${PROG_BIN} defaults
+# update configuration files
+rsync /vagrant/json/* ${PROG_CFG}
 
 exit 0
