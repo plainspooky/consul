@@ -55,20 +55,20 @@ do_consul_install(){
     sudo touch ${PROG_ERR} ${PROG_LOG}
     sudo chown root.${PROG_USR} ${PROG_ERR} ${PROG_LOG}
     sudo chmod 664 ${PROG_ERR} ${PROG_LOG}
-
-    # copy startup scripts and enable at boot
-    sudo cp /vagrant/scripts/consul ${PROG_SYV}
-    sudo chmod 755 ${PROG_SYV}
-    sudo update-rc.d ${PROG_BIN} defaults
 }
 
 # required packages
-sudo apt-get install --yes rsync unzip wget
+sudo apt-get install --yes curl rsync unzip wget
 
 # download consul and install on right place
 [[ ! -f "${INST_DIR}/${PROG_BIN}" ]] && do_consul_install
 
 # update configuration files
-rsync /vagrant/json/* ${PROG_CFG}
+sudo rsync /vagrant/json/* ${PROG_CFG}
+
+# copy/update startup scripts and enable at boot
+sudo cp /vagrant/scripts/consul ${PROG_SYV}
+sudo chmod 755 ${PROG_SYV}
+sudo update-rc.d ${PROG_BIN} defaults
 
 exit 0

@@ -4,7 +4,7 @@
 		"tags": ["lighttp"],
 		"port": 80,
 		"check": {
-			"script": "curl localhost >/dev/null 2>&1",
+			"http": "http://localhost:80/",
 			"interval": "10s"
 		}
 	}
