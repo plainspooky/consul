@@ -24,12 +24,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       n1.vm.hostname = "n1"
       n1.vm.network "private_network", ip: "172.20.20.11"
   end
-  
+
   config.vm.define "n2" do |n2|
       n2.vm.hostname = "n2"
       n2.vm.network "private_network", ip: "172.20.20.12"
   end
-  
+
   config.vm.define "n3" do |n3|
       n3.vm.hostname = "n3"
       n3.vm.network "private_network", ip: "172.20.20.13"

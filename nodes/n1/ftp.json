@@ -1,0 +1,11 @@
+{
+  "service": {
+        "name": "ftp",
+        "tags": ["proftpd","fileserver"],
+        "port": 21,
+        "check": {
+            "tcp": "localhost:21",
+            "interval": "30s"
+        }
+    }
+}

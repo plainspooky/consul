@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "mongodb",
+    "tags": [
+      "database",
+      "db",
+      "nosql"
+    ],
+    "port": 28017
+  }
+}

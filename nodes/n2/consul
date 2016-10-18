@@ -1,0 +1,3 @@
+BIND_IP=172.20.20.12
+MODE=client
+
